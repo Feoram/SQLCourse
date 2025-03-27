@@ -1,0 +1,28 @@
+Table employers {
+  id SERIAL [pk]
+  name VARCHAR(255)
+  contact_info TEXT
+}
+
+Table vacancies {
+  id SERIAL [pk]
+  title VARCHAR(255)
+  employer_id INT [ref: > employers.id]
+  salary NUMERIC
+  location VARCHAR(255)
+  published_date DATE
+  closed_date DATE
+  min_salary NUMERIC
+  max_salary NUMERIC
+}
+
+Table skills {
+  id SERIAL [pk]
+  name VARCHAR(255)
+}
+
+Table requirements {
+  vacancy_id INT [ref: > vacancies.id]
+  skill_id INT [ref: > skills.id]
+  Primary key (vacancy_id, skill_id)
+}
