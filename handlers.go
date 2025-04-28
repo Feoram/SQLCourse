@@ -185,3 +185,102 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(result)
 }
+
+// Добавить работодателя
+func CreateEmployer(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name        string `json:"name"`
+		ContactInfo string `json:"contact_info"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	_, err := DB.Exec(`INSERT INTO employers (name, contact_info) VALUES ($1, $2)`, input.Name, input.ContactInfo)
+	if err != nil {
+		http.Error(w, "Ошибка добавления работодателя: "+err.Error(), 500)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+// Добавить вакансию
+func CreateVacancy(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title         string  `json:"title"`
+		EmployerID    int     `json:"employer_id"`
+		Salary        float64 `json:"salary"`
+		MinSalary     float64 `json:"min_salary"`
+		MaxSalary     float64 `json:"max_salary"`
+		Location      string  `json:"location"`
+		PublishedDate string  `json:"published_date"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	_, err := DB.Exec(`INSERT INTO vacancies (title, employer_id, salary, min_salary, max_salary, location, published_date) 
+                       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		input.Title, input.EmployerID, input.Salary, input.MinSalary, input.MaxSalary, input.Location, input.PublishedDate)
+	if err != nil {
+		http.Error(w, "Ошибка добавления вакансии: "+err.Error(), 500)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+// Добавить навык
+func CreateSkill(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	_, err := DB.Exec(`INSERT INTO skills (name) VALUES ($1)`, input.Name)
+	if err != nil {
+		http.Error(w, "Ошибка добавления навыка: "+err.Error(), 500)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+// Удалить работодателя
+func DeleteEmployer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	_, err := DB.Exec(`DELETE FROM employers WHERE id = $1`, id)
+	if err != nil {
+		http.Error(w, "Ошибка удаления работодателя: "+err.Error(), 500)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// Удалить вакансию
+func DeleteVacancy(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	_, err := DB.Exec(`DELETE FROM vacancies WHERE id = $1`, id)
+	if err != nil {
+		http.Error(w, "Ошибка удаления вакансии: "+err.Error(), 500)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// Удалить навык
+func DeleteSkill(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	_, err := DB.Exec(`DELETE FROM skills WHERE id = $1`, id)
+	if err != nil {
+		http.Error(w, "Ошибка удаления навыка: "+err.Error(), 500)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
